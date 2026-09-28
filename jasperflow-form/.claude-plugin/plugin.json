@@ -1,0 +1,8 @@
+{
+  "name": "jasperflow",
+  "description": "Claude skills for JasperFlow, Manhattan University’s form & workflow platform. Builds importable forms and converts Softdocs/Etrieve forms.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Manhattan University · Enterprise Applications"
+  }
+}

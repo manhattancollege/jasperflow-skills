@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "name": "Equipment Request",
+  "description": "Request department equipment. Example form for the jasperflow-form skill.",
+  "definition": {
+    "id": "equipment-request",
+    "title": "Equipment Request",
+    "settings": {
+      "showProgress": true
+    },
+    "calculatedFields": [],
+    "pages": [
+      {
+        "id": "page-1",
+        "title": "Request",
+        "canvas": {
+          "width": 800,
+          "height": 968
+        },
+        "fields": [
+          {
+            "id": "mu_banner",
+            "type": "image",
+            "label": "",
+            "align": "center",
+            "imageUrl": "/assets/mu-banner.svg",
+            "imageAlt": "Manhattan University",
+            "style": {},
+            "position": {
+              "x": 0,
+              "y": 0,
+              "w": 800,
+              "h": 172
+            }
+          },
+          {
+            "id": "form_title",
+            "type": "heading",
+            "label": "Equipment Request",
+            "content": "",
+            "style": {
+              "bold": true,
+              "fontSize": 26
+            },
+            "position": {
+              "x": 40,
+              "y": 196,
+              "w": 720,
+              "h": 44
+            }
+          },
+          {
+            "id": "form_intro",
+            "type": "rich_text",
+            "label": "",
+            "align": "left",
+            "content": "Use this form to request equipment for your department. Requests over $500 need a justification.",
+            "style": {
+              "color": "#4b5563",
+              "fontSize": 14
+            },
+            "position": {
+              "x": 40,
+              "y": 250,
+              "w": 720,
+              "h": 40
+            }
+          },
+          {
+            "id": "intro_divider",
+            "type": "divider",
+            "label": "",
+            "style": {},
+            "position": {
+              "x": 40,
+              "y": 298,
+              "w": 720,
+              "h": 16
+            }
+          },
+          {
+            "id": "first_name",
+            "type": "lookup",
+            "label": "First name",
+            "bannerPrefillPath": "firstName",
+            "helpText": "Auto-filled from Banner",
+            "position": {
+              "x": 40,
+              "y": 330,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "last_name",
+            "type": "lookup",
+            "label": "Last name",
+            "bannerPrefillPath": "lastName",
+            "helpText": "Auto-filled from Banner",
+            "position": {
+              "x": 410,
+              "y": 330,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "email",
+            "type": "lookup",
+            "label": "Email",
+            "bannerPrefillPath": "email",
+            "bannerEmailCode": "MCEM",
+            "position": {
+              "x": 40,
+              "y": 414,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "department",
+            "type": "text",
+            "label": "Department",
+            "required": true,
+            "position": {
+              "x": 410,
+              "y": 414,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "details_heading",
+            "type": "heading",
+            "label": "Equipment",
+            "content": "",
+            "style": {
+              "bold": true,
+              "fontSize": 20
+            },
+            "position": {
+              "x": 40,
+              "y": 506,
+              "w": 720,
+              "h": 36
+            }
+          },
+          {
+            "id": "equipment_type",
+            "type": "dropdown",
+            "label": "Equipment type",
+            "required": true,
+            "options": [
+              {
+                "label": "Laptop",
+                "value": "laptop"
+              },
+              {
+                "label": "Monitor",
+                "value": "monitor"
+              },
+              {
+                "label": "Printer",
+                "value": "printer"
+              },
+              {
+                "label": "Other",
+                "value": "other"
+              }
+            ],
+            "position": {
+              "x": 40,
+              "y": 554,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "equipment_other",
+            "type": "text",
+            "label": "Describe the equipment",
+            "helpText": "Shown because you chose <b>Other</b>.",
+            "conditionalLogic": [
+              {
+                "sourceFieldId": "equipment_type",
+                "operator": "eq",
+                "value": "other",
+                "action": "show"
+              }
+            ],
+            "position": {
+              "x": 410,
+              "y": 554,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "estimated_cost",
+            "type": "number",
+            "label": "Estimated cost (USD)",
+            "required": true,
+            "validations": [
+              {
+                "type": "min",
+                "value": 0,
+                "message": "Cost cannot be negative"
+              }
+            ],
+            "position": {
+              "x": 40,
+              "y": 638,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "needed_by",
+            "type": "date",
+            "label": "Needed by",
+            "position": {
+              "x": 410,
+              "y": 638,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "justification",
+            "type": "textarea",
+            "label": "Justification",
+            "helpText": "Required for requests over $500. Include:<ul><li>What it is for</li><li>Why existing equipment will not do</li></ul>",
+            "position": {
+              "x": 40,
+              "y": 722,
+              "w": 720,
+              "h": 130
+            }
+          },
+          {
+            "id": "footer_divider",
+            "type": "divider",
+            "label": "",
+            "style": {},
+            "position": {
+              "x": 40,
+              "y": 872,
+              "w": 720,
+              "h": 16
+            },
+            "pinnedToBottom": true
+          },
+          {
+            "id": "footer_note",
+            "type": "rich_text",
+            "label": "",
+            "align": "center",
+            "content": "Manhattan University · This form is for official university business.",
+            "style": {
+              "align": "center",
+              "color": "#9ca3af",
+              "fontSize": 12
+            },
+            "position": {
+              "x": 40,
+              "y": 896,
+              "w": 720,
+              "h": 32
+            },
+            "pinnedToBottom": true
+          }
+        ]
+      }
+    ]
+  }
+}

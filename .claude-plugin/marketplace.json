@@ -1,0 +1,28 @@
+{
+  "name": "manhattan-jasperflow",
+  "owner": {
+    "name": "Manhattan University · Enterprise Applications"
+  },
+  "description": "Claude skills for working with JasperFlow, Manhattan University's form & workflow platform.",
+  "plugins": [
+    {
+      "name": "jasperflow",
+      "source": "./jasperflow-form",
+      "description": "Build a JasperFlow form (or convert a Softdocs/Etrieve form) and get an importable .jasperflow.json file.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Manhattan University · Enterprise Applications"
+      },
+      "keywords": [
+        "jasperflow",
+        "forms",
+        "softdocs",
+        "etrieve",
+        "banner"
+      ]
+    }
+  ],
+  "renames": {
+    "jasperflow-forms": "jasperflow"
+  }
+}
