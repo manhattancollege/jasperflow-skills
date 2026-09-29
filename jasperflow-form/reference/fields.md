@@ -88,6 +88,10 @@ No value, `label` may be empty.
 - `sql_source` — a builder-authored SELECT that feeds dropdown options or a table.
   Omit `sql.connectionId`; it is stripped on export and chosen in the app.
 - `optionsSource` — binds a choice field's options to a `sql_source` element.
+- `fillFrom` — `{ "sourceId": "<id>", "column": "<COLUMN>" }` fills a text, textarea,
+  number, date, dropdown, radio or lookup field from a query's row: from a `sql_source`
+  element, its first row (the filler's own record); from a dropdown/radio fed by a query,
+  the row behind the option picked (pick a student → their ID and email fill in).
 - `code` — sandboxed HTML/CSS/JS block.
 - `table` / `chart` — visualisations bound to a `sql_source`.
 
