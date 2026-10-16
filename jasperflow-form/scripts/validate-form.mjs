@@ -21,6 +21,10 @@ const ALLOWED_TAGS = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'ul', 'ol', 'l
   'br', 'span', 'div', 'a']);
 const OPERATORS = new Set(['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'contains', 'empty', 'notEmpty']);
 const ACTIONS = new Set(['show', 'hide', 'require', 'unrequire', 'enable', 'disable', 'setValue']);
+// Mirrors BANNER_PREFILL_PATHS in the app's form builder. The last five are
+// employment paths, read from the employee's current Banner job.
+const BANNER_PREFILL_PATHS = ['firstName', 'lastName', 'bannerId', 'email',
+  'position', 'jobTitle', 'department', 'departmentCode', 'supervisorName'];
 
 const errors = [];
 const warnings = [];
@@ -128,7 +132,7 @@ for (const [pi, page] of (def.pages ?? []).entries()) {
     }
 
     // Banner prefill
-    if (f.bannerPrefillPath && !['firstName', 'lastName', 'bannerId', 'email'].includes(f.bannerPrefillPath)) {
+    if (f.bannerPrefillPath && !BANNER_PREFILL_PATHS.includes(f.bannerPrefillPath)) {
       warn(`Field "${f.id}" bannerPrefillPath "${f.bannerPrefillPath}" is not a known Banner path.`);
     }
     if (f.bannerEmailCode && !['auto', 'MC', 'MCEM'].includes(f.bannerEmailCode)) {
