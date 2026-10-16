@@ -232,3 +232,20 @@ A page can be hidden, or shown/hidden by an answer:
 - A page's rule can't watch a field **on that same page**: once hidden, nobody could
   change it back.
 - Hidden pages are skipped (not shown blank) and their questions aren't required.
+
+### Team calendar (time off, remote days)
+
+A form whose answers are **dates people are out** (time off, travel, remote days) shows
+up on JasperFlow's **Team Calendar**: the submitter sees their own, and approvers see
+the requests they approve. Model the dates as a `repeating_table`, one row per stretch,
+with `date` columns for the first and last day, a `dropdown` for the type, and a
+`dropdown` for full or half day. Then say which columns are which:
+
+```json
+"settings": { "calendar": { "tableFieldId": "time_requested",
+  "startColumn": "start_date", "endColumn": "end_date",
+  "typeColumn": "leave_type", "portionColumn": "day_portion" } }
+```
+
+Without it, the calendar guesses from the first table that has a date column. Type
+values containing `vacation`, `sick` or `remote` get their own colours.
