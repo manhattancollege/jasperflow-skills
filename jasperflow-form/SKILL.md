@@ -148,25 +148,27 @@ university, and it is the thing most often left out.
 
 ```json
 { "id": "mu_banner", "type": "image", "label": "", "align": "center",
-  "imageUrl": "/assets/mu-banner.svg", "imageAlt": "Manhattan University",
+  "imageUrl": "/assets/mu-banner-compact.svg", "imageAlt": "Manhattan University",
   "style": {},
-  "position": { "x": 0, "y": 0, "w": 800, "h": 172 } },
+  "position": { "x": 0, "y": 0, "w": 800, "h": 120 } },
 
 { "id": "form_title", "type": "heading", "label": "<the form's title>", "content": "",
   "style": { "bold": true, "fontSize": 26 },
-  "position": { "x": 40, "y": 196, "w": 720, "h": 44 } },
+  "position": { "x": 40, "y": 144, "w": 720, "h": 44 } },
 
 { "id": "form_intro", "type": "rich_text", "label": "", "align": "left",
   "content": "<one or two sentences on what the form is for>",
   "style": { "color": "#4b5563", "fontSize": 14 },
-  "position": { "x": 40, "y": 246, "w": 720, "h": 79 } },
+  "position": { "x": 40, "y": 194, "w": 720, "h": 79 } },
 
 { "id": "header_divider", "type": "divider", "label": "", "style": {},
-  "position": { "x": 40, "y": 317, "w": 720, "h": 16 } }
+  "position": { "x": 40, "y": 265, "w": 720, "h": 16 } }
 ```
 
 Note the banner is **full-bleed**: `x: 0, w: 800`, edge to edge, NOT inset to the
-40px margin like everything else. Your first real field starts at about `y: 350`.
+40px margin like everything else. Your first real field starts at about `y: 298`.
+Use the **compact** banner (`mu-banner-compact.svg`, 120px tall); the older 172px
+`mu-banner.svg` overpowers the form.
 
 The rest:
 

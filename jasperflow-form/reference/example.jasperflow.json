@@ -15,7 +15,7 @@
         "title": "Request",
         "canvas": {
           "width": 800,
-          "height": 1172
+          "height": 1120
         },
         "fields": [
           {
@@ -23,14 +23,14 @@
             "type": "image",
             "label": "",
             "align": "center",
-            "imageUrl": "/assets/mu-banner.svg",
+            "imageUrl": "/assets/mu-banner-compact.svg",
             "imageAlt": "Manhattan University",
             "style": {},
             "position": {
               "x": 0,
               "y": 0,
               "w": 800,
-              "h": 172
+              "h": 120
             }
           },
           {
@@ -44,7 +44,7 @@
             },
             "position": {
               "x": 40,
-              "y": 196,
+              "y": 144,
               "w": 720,
               "h": 44
             }
@@ -61,7 +61,7 @@
             },
             "position": {
               "x": 40,
-              "y": 250,
+              "y": 198,
               "w": 720,
               "h": 40
             }
@@ -73,7 +73,7 @@
             "style": {},
             "position": {
               "x": 40,
-              "y": 298,
+              "y": 246,
               "w": 720,
               "h": 16
             }
@@ -86,7 +86,7 @@
             "helpText": "Auto-filled from Banner",
             "position": {
               "x": 40,
-              "y": 330,
+              "y": 278,
               "w": 350,
               "h": 72
             }
@@ -99,7 +99,7 @@
             "helpText": "Auto-filled from Banner",
             "position": {
               "x": 410,
-              "y": 330,
+              "y": 278,
               "w": 350,
               "h": 72
             }
@@ -112,7 +112,7 @@
             "bannerEmailCode": "MCEM",
             "position": {
               "x": 40,
-              "y": 414,
+              "y": 362,
               "w": 350,
               "h": 72
             }
@@ -124,7 +124,7 @@
             "required": true,
             "position": {
               "x": 410,
-              "y": 414,
+              "y": 362,
               "w": 350,
               "h": 72
             }
@@ -140,7 +140,7 @@
             },
             "position": {
               "x": 40,
-              "y": 506,
+              "y": 454,
               "w": 720,
               "h": 36
             }
@@ -170,7 +170,7 @@
             ],
             "position": {
               "x": 40,
-              "y": 554,
+              "y": 502,
               "w": 350,
               "h": 72
             }
@@ -190,7 +190,7 @@
             ],
             "position": {
               "x": 410,
-              "y": 554,
+              "y": 502,
               "w": 350,
               "h": 72
             }
@@ -209,7 +209,7 @@
             ],
             "position": {
               "x": 40,
-              "y": 638,
+              "y": 586,
               "w": 350,
               "h": 72
             }
@@ -220,7 +220,7 @@
             "label": "Needed by",
             "position": {
               "x": 410,
-              "y": 638,
+              "y": 586,
               "w": 350,
               "h": 72
             }
@@ -232,7 +232,7 @@
             "helpText": "Required for requests over $500. Include:<ul><li>What it is for</li><li>Why existing equipment will not do</li></ul>",
             "position": {
               "x": 40,
-              "y": 722,
+              "y": 670,
               "w": 720,
               "h": 130
             }
@@ -248,7 +248,7 @@
             },
             "position": {
               "x": 40,
-              "y": 872,
+              "y": 820,
               "w": 720,
               "h": 52
             }
@@ -278,7 +278,7 @@
             ],
             "position": {
               "x": 40,
-              "y": 936,
+              "y": 884,
               "w": 350,
               "h": 72
             }
@@ -291,7 +291,7 @@
             "filledByStep": "supervisor",
             "position": {
               "x": 410,
-              "y": 936,
+              "y": 884,
               "w": 350,
               "h": 120
             }
@@ -303,7 +303,7 @@
             "style": {},
             "position": {
               "x": 40,
-              "y": 1076,
+              "y": 1024,
               "w": 720,
               "h": 16
             },
@@ -322,7 +322,7 @@
             },
             "position": {
               "x": 40,
-              "y": 1100,
+              "y": 1048,
               "w": 720,
               "h": 32
             },
