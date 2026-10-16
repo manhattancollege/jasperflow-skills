@@ -6,7 +6,10 @@
  * layout/authoring mistakes that otherwise only show up once the form is open in
  * the builder. Exits non-zero on errors; warnings alone exit 0.
  *
- *   node validate-form.mjs my-form.jasperflow.json
+ *   node validate-form.mjs my-form.jasperflow.json [--workflow my.workflow.jasperflow.json]
+ *
+ * With --workflow, step names used by "filledByStep" / "hideFrom.steps" are
+ * checked against that workflow's node ids.
  */
 import { readFileSync } from 'node:fs';
 
@@ -31,11 +34,42 @@ const warnings = [];
 const err = (m) => errors.push(m);
 const warn = (m) => warnings.push(m);
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const wfFile = args.includes('--workflow') ? args[args.indexOf('--workflow') + 1] : null;
+const file = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--workflow');
 if (!file) {
-  console.error('usage: validate-form.mjs <file>.jasperflow.json');
+  console.error('usage: validate-form.mjs <file>.jasperflow.json [--workflow <file>.workflow.jasperflow.json]');
   process.exit(2);
 }
+// Steps a person works (they can fill fields in / have things hidden from them).
+let workflowSteps = null;
+if (wfFile) {
+  try {
+    const wf = JSON.parse(readFileSync(wfFile, 'utf8'));
+    workflowSteps = new Set((wf.definition?.nodes ?? [])
+      .filter((n) => ['approval', 'information', 'manual_export'].includes(n.type)).map((n) => n.id));
+  } catch (e) {
+    console.error(`${wfFile}: not valid JSON: ${e.message}`);
+    process.exit(2);
+  }
+}
+const IDENTITY_BINDS = new Set(['bannerid', 'banner_id', 'pidm']);
+const checkStep = (where, step) => {
+  if (typeof step !== 'string' || !step) { err(`${where} names an empty workflow step.`); return; }
+  if (workflowSteps && !workflowSteps.has(step)) {
+    err(`${where} names workflow step "${step}", which isn't an approval/acknowledgement/export step in ${wfFile}.`);
+  }
+};
+const checkHideFrom = (where, h, isPage) => {
+  if (h === undefined) return;
+  if (!h || typeof h !== 'object' || Array.isArray(h)) { err(`${where} hideFrom must be an object.`); return; }
+  for (const k of Object.keys(h)) {
+    if (!['submitter', 'steps', 'always'].includes(k)) err(`${where} hideFrom has unknown key "${k}".`);
+  }
+  if (h.always && !isPage) warn(`${where} hideFrom.always is meant for pages — on a field, delete the field instead.`);
+  if (h.steps !== undefined && !Array.isArray(h.steps)) err(`${where} hideFrom.steps must be an array of step ids.`);
+  for (const st of h.steps ?? []) checkStep(`${where} hideFrom.steps`, st);
+};
 
 let pkg;
 try {
@@ -46,6 +80,10 @@ try {
 }
 
 // ── Envelope ────────────────────────────────────────────────────────────────
+if (pkg.kind === 'workflow' || Array.isArray(pkg.definition?.nodes)) {
+  console.error('This is a WORKFLOW file — check it with validate-workflow.mjs.');
+  process.exit(1);
+}
 if (pkg.schemaVersion !== 1) warn(`schemaVersion should be 1 (got ${JSON.stringify(pkg.schemaVersion)}).`);
 if (!pkg.name || typeof pkg.name !== 'string') err('Package needs a "name".');
 const def = pkg.definition;
@@ -59,9 +97,20 @@ if (!Array.isArray(def.pages) || def.pages.length === 0) err('A form must have a
 // ── Pages & fields ──────────────────────────────────────────────────────────
 const ids = new Map();          // id -> field
 const allFields = [];
+const pageRules = [];           // checked once every field id is known
 for (const [pi, page] of (def.pages ?? []).entries()) {
   if (!page.id) err(`Page ${pi + 1} must have an id.`);
   if (!Array.isArray(page.fields)) { err(`Page "${page.id ?? pi + 1}" must have a fields array.`); continue; }
+  checkHideFrom(`Page "${page.id}"`, page.hideFrom, true);
+  const pageFieldIds = new Set((page.fields ?? []).map((f) => f.id));
+  for (const r of page.conditionalLogic ?? []) {
+    if (!['show', 'hide'].includes(r.action)) err(`Page "${page.id}" rule action must be show or hide (got "${r.action}").`);
+    if (!OPERATORS.has(r.operator)) err(`Page "${page.id}" rule has unknown operator "${r.operator}".`);
+    if (pageFieldIds.has(r.sourceFieldId)) {
+      err(`Page "${page.id}" rule watches "${r.sourceFieldId}", a field on the same page — once hidden it could never come back.`);
+    }
+    pageRules.push({ page: page.id, rule: r });
+  }
   const cw = page.canvas?.width ?? 800;
   if (!page.canvas) warn(`Page "${page.id}" has no canvas — defaulting to 800x1000.`);
 
@@ -119,6 +168,29 @@ for (const [pi, page] of (def.pages ?? []).entries()) {
     // SQL source shouldn't carry a connection
     if (f.type === 'sql_source' && f.sql?.connectionId) {
       warn(`Field "${f.id}" carries sql.connectionId — it is stripped on import; the builder picks the data source.`);
+    }
+
+    // SQL: only the two identity binds the server fills.
+    for (const sql of [f.sql?.sql, f.optionsSource?.sql?.sql]) {
+      if (typeof sql !== 'string') continue;
+      const masked = sql.replace(/'[^']*'/g, "''");
+      for (const m of masked.matchAll(/:([a-zA-Z][a-zA-Z0-9_]*)/g)) {
+        if (!IDENTITY_BINDS.has(m[1].toLowerCase())) {
+          err(`Field "${f.id}" query uses :${m[1]} — only :bannerId and :pidm are filled in (with the person filling in the form).`);
+        }
+      }
+      if (/\binto\b|\b(insert|update|delete|merge)\b|@/i.test(masked)) err(`Field "${f.id}" query must be a single read-only SELECT (no INTO, writes or database links).`);
+    }
+
+    // Who fills it in / who it's hidden from
+    if (f.filledByStep !== undefined) {
+      if (!INPUT_TYPES.has(f.type) || f.type === 'calculated') err(`Field "${f.id}" has filledByStep, but only input fields can be filled in.`);
+      checkStep(`Field "${f.id}" filledByStep`, f.filledByStep);
+      if (f.bannerPrefillPath) warn(`Field "${f.id}" is filled in by an approver AND auto-filled from Banner — pick one.`);
+    }
+    checkHideFrom(`Field "${f.id}"`, f.hideFrom, false);
+    if (f.filledByStep && (f.hideFrom?.steps ?? []).includes(f.filledByStep)) {
+      err(`Field "${f.id}" is filled in by step "${f.filledByStep}" but hidden from it.`);
     }
 
     // Rich text / help text HTML
@@ -183,6 +255,10 @@ for (const f of allFields) {
       warn(`Field "${f.id}" uses "eq" against multi-select "${r.sourceFieldId}" — "contains" is the right operator.`);
     }
   }
+}
+
+for (const { page, rule } of pageRules) {
+  if (!ids.has(rule.sourceFieldId)) err(`Page "${page}" rule points at unknown field "${rule.sourceFieldId}".`);
 }
 
 // ── Calculated fields ───────────────────────────────────────────────────────

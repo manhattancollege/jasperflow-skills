@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "Equipment Request",
-  "description": "Request department equipment. Example form for the jasperflow-form skill.",
+  "description": "Request department equipment. Example form for the jasperflow-form skill; routed by example.workflow.jasperflow.json (the supervisor fills in the last section).",
   "definition": {
     "id": "equipment-request",
     "title": "Equipment Request",
@@ -15,7 +15,7 @@
         "title": "Request",
         "canvas": {
           "width": 800,
-          "height": 968
+          "height": 1172
         },
         "fields": [
           {
@@ -238,13 +238,72 @@
             }
           },
           {
+            "id": "approval_heading",
+            "type": "heading",
+            "label": "Supervisor approval",
+            "content": "Completed by your supervisor when they review the request.",
+            "style": {
+              "bold": true,
+              "fontSize": 20
+            },
+            "position": {
+              "x": 40,
+              "y": 872,
+              "w": 720,
+              "h": 52
+            }
+          },
+          {
+            "id": "funding_source",
+            "type": "dropdown",
+            "label": "Funding source",
+            "required": true,
+            "filledByStep": "supervisor",
+            "hideFrom": {
+              "submitter": true
+            },
+            "options": [
+              {
+                "label": "Department budget",
+                "value": "dept"
+              },
+              {
+                "label": "Grant",
+                "value": "grant"
+              },
+              {
+                "label": "Capital request",
+                "value": "capital"
+              }
+            ],
+            "position": {
+              "x": 40,
+              "y": 936,
+              "w": 350,
+              "h": 72
+            }
+          },
+          {
+            "id": "supervisor_signature",
+            "type": "signature",
+            "label": "Supervisor signature",
+            "required": true,
+            "filledByStep": "supervisor",
+            "position": {
+              "x": 410,
+              "y": 936,
+              "w": 350,
+              "h": 120
+            }
+          },
+          {
             "id": "footer_divider",
             "type": "divider",
             "label": "",
             "style": {},
             "position": {
               "x": 40,
-              "y": 872,
+              "y": 1076,
               "w": 720,
               "h": 16
             },
@@ -263,7 +322,7 @@
             },
             "position": {
               "x": 40,
-              "y": 896,
+              "y": 1100,
               "w": 720,
               "h": 32
             },
