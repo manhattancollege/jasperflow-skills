@@ -193,9 +193,10 @@ workflow step. Steps are named by their workflow **node id** (see `workflows.md`
 - On a field or a **page**. `submitter: true` hides it from the person submitting;
   `steps` hides it from those steps' approvers; on a page, `always: true` hides it from
   everyone filling in or approving.
-- Hidden answers are removed by the server, not just undrawn, and left out of the
-  copy of the PDF that person downloads. Staff with full access (responses, reports,
-  the archived PDF) still see everything.
+- Hidden keeps it off that person's screen: the server doesn't send it to their
+  browser or print it on their PDF copy. The answer is still saved and used by
+  exports, workflow conditions and email templates (`{{field.<id>}}`), and staff
+  with full access see everything.
 - Common pattern: a step's decision is `hideFrom.submitter` while its signature and
   date stay visible.
 
