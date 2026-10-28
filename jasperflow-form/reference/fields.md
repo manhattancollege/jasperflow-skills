@@ -66,7 +66,26 @@ Column `type`: `text` · `number` · `date` · `dropdown` (add `options`) · `ch
 { "id": "email", "type": "lookup", "label": "Email",
   "bannerPrefillPath": "email", "bannerEmailCode": "auto" }
 ```
-`bannerPrefillPath`: `firstName` · `lastName` · `bannerId` · `email`.
+`bannerPrefillPath` — person paths (anyone):
+
+| Path | Fills in |
+|---|---|
+| `firstName` | First name. |
+| `lastName` | Last name. |
+| `bannerId` | Banner ID. |
+| `email` | Email address from GOREMAL (see `bannerEmailCode`). |
+
+Employment paths (employees only — read from their current Banner job in NBRJOBS,
+with the department title from FTVORGN; empty for students or anyone with no active job):
+
+| Path | Fills in |
+|---|---|
+| `position` | Position number of their current job. |
+| `jobTitle` | Job title (the job's description). |
+| `department` | Department title; falls back to the org code if there is no title. |
+| `departmentCode` | Department org code. |
+| `supervisorName` | Their supervisor's full name. |
+
 `bannerEmailCode` (email only): `auto` (by account type) · `MC` (student) · `MCEM` (employee).
 
 ## Design / layout elements

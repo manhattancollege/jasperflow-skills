@@ -92,9 +92,20 @@ Forms are a **free-form canvas**, not a flowing document.
    `sql.connectionId` — the builder picks the Banner connection in the app. Never guess
    at table names; if a field needs Banner data you can't confirm, leave it a plain input
    and say so in your summary.
-8. **Banner autofill**: set `bannerPrefillPath` to one of `firstName`, `lastName`,
-   `bannerId`, `email` on a `lookup` field. For `email`, add
-   `"bannerEmailCode": "auto" | "MC" | "MCEM"` (MC = student, MCEM = employee).
+8. **Banner autofill**: set `bannerPrefillPath` on a `lookup` field to one of:
+   - `firstName` — first name
+   - `lastName` — last name
+   - `bannerId` — Banner ID
+   - `email` — email address; add `"bannerEmailCode": "auto" | "MC" | "MCEM"`
+     (MC = student, MCEM = employee)
+
+   Employment paths, for employees only — they come from the person's current Banner
+   job and are empty for students:
+   - `position` — position number
+   - `jobTitle` — job title
+   - `department` — department title
+   - `departmentCode` — department org code
+   - `supervisorName` — supervisor's full name
 
 ## House style
 
