@@ -117,6 +117,24 @@ No value, `label` may be empty.
 Don't invent SQL. If a form needs data-driven options you can't verify, use static
 `options` and note it for the builder.
 
+### Queries: binds and rules
+
+When you *do* have a confirmed table (the user gave it to you), a `sql_source` query:
+
+- is a single `SELECT` (a `WITH …` CTE is fine, including a recursive one); no
+  `INSERT`/`UPDATE`/PL-SQL, no `INTO`, no database links (`@`), no `DBMS_`/`UTL_`;
+- can use **only two binds**, filled by the server with the person filling in the form:
+  `:bannerId` (their Banner ID) and `:pidm` (their PIDM). Case doesn't matter
+  (`:bannerID` works). Any other bind is an error. Filter on one of them, or every
+  user sees the same rows;
+- qualifies table names with their schema (`saturn.spriden`, `manhattan.gzrtmty`);
+- must have every table it reads allow-listed on the connection, and granted to the
+  read-only Banner account. List the tables in your summary.
+
+A `sql_source` element shows its **first row** as label/value pairs (column aliases
+become the labels), so shape a "your details" query to return one row:
+`SUM(CASE WHEN … END) AS "Vacation used"`.
+
 ## Validation rules
 
 ```json
@@ -146,6 +164,42 @@ Types: `required` · `email` · `regex` · `minLength` · `maxLength` · `min` �
   it fires. Don't put both on one field.
 - Multi-select `checkbox` sources hold an array → use `contains`.
 
+## Approver fields and audiences
+
+A form can have more than one audience: the submitter, and the approver of each
+workflow step. Steps are named by their workflow **node id** (see `workflows.md`).
+
+### `filledByStep`: the approver fills it in
+
+```json
+{ "id": "supervisor_comments", "type": "textarea", "label": "Supervisor comments",
+  "filledByStep": "supervisor" }
+```
+
+- The submitter sees it read-only; the approver of step `supervisor` fills it in from
+  their approvals inbox before deciding.
+- `"required": true` means that approver can't **approve** until it's filled in
+  (declining doesn't need it). The submitter is never held to it.
+- Typical uses: an approver's signature and date, a decision dropdown, comments.
+  Each approver gets **their own** fields: with three approvers who each sign, make
+  three signature fields.
+
+### `hideFrom`: who doesn't see it
+
+```json
+"hideFrom": { "submitter": true, "steps": ["registrar"] }
+```
+
+- On a field or a **page**. `submitter: true` hides it from the person submitting;
+  `steps` hides it from those steps' approvers; on a page, `always: true` hides it from
+  everyone filling in or approving.
+- Hidden keeps it off that person's screen: the server doesn't send it to their
+  browser or print it on their PDF copy. The answer is still saved and used by
+  exports, workflow conditions and email templates (`{{field.<id>}}`), and staff
+  with full access see everything.
+- Common pattern: a step's decision is `hideFrom.submitter` while its signature and
+  date stay visible.
+
 ## Calculated fields
 
 ```json
@@ -163,3 +217,36 @@ other fields' ids.
 ```
 Multi-page forms get a clickable page navigator automatically; give each page a clear
 `title` since those become the navigator labels.
+
+A page can be hidden, or shown/hidden by an answer:
+
+```json
+{ "id": "grad-page", "title": "Graduation details",
+  "conditionalLogic": [{ "sourceFieldId": "graduating", "operator": "eq",
+                         "value": "yes", "action": "show" }],
+  "hideFrom": { "steps": ["registrar"] },
+  "fields": [ … ] }
+```
+
+- Page rules take only `show` / `hide` (same operators as fields). With a `show` rule
+  the page is hidden until it matches; `hide` wins over `show`.
+- A page's rule can't watch a field **on that same page**: once hidden, nobody could
+  change it back.
+- Hidden pages are skipped (not shown blank) and their questions aren't required.
+
+### Team calendar (time off, remote days)
+
+A form whose answers are **dates people are out** (time off, travel, remote days) shows
+up on JasperFlow's **Team Calendar**: the submitter sees their own, and approvers see
+the requests they approve. Model the dates as a `repeating_table`, one row per stretch,
+with `date` columns for the first and last day, a `dropdown` for the type, and a
+`dropdown` for full or half day. Then say which columns are which:
+
+```json
+"settings": { "calendar": { "tableFieldId": "time_requested",
+  "startColumn": "start_date", "endColumn": "end_date",
+  "typeColumn": "leave_type", "portionColumn": "day_portion" } }
+```
+
+Without it, the calendar guesses from the first table that has a date column. Type
+values containing `vacation`, `sick` or `remote` get their own colours.

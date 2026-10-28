@@ -1,13 +1,15 @@
 ---
 name: form
-description: Build a JasperFlow form and hand back an importable .jasperflow.json file. Use whenever someone wants to create, draft, scaffold, or mock up a form for JasperFlow (Manhattan University's form & workflow platform), or to convert an existing form into JasperFlow — including migrating a Softdocs/Etrieve form from its HTML or JSON. Triggers include "build a JasperFlow form", "make a form for JasperFlow", "convert this Softdocs form", "turn this HTML/PDF/screenshot into a JasperFlow form", "import this into JasperFlow".
+description: Build a JasperFlow form, and its approval workflow, as importable files (.jasperflow.json and .workflow.jasperflow.json). Use whenever someone wants to create, draft, scaffold, or mock up a form or an approval routing for JasperFlow (Manhattan University's form & workflow platform), or to convert an existing form into JasperFlow — including migrating a Softdocs/Etrieve form and its routing. Triggers include "build a JasperFlow form", "make a form for JasperFlow", "it needs supervisor approval", "add a workflow", "convert this Softdocs form", "turn this HTML/PDF/screenshot into a JasperFlow form", "import this into JasperFlow".
 ---
 
 # Building a JasperFlow form
 
-You produce **one JSON file** that a form builder imports through **Forms → Import** in
-JasperFlow. Import always creates a **DRAFT** — nothing goes live until a person reviews
-and publishes it, so favour a good first draft over asking many questions up front.
+You produce a **form file** that a form builder imports through **Forms → Import** in
+JasperFlow, and, whenever the request involves approvals or routing ("goes to their
+supervisor", "HR signs off"), a **workflow file** imported through **Workflow Builder →
+Import**. Both imports create **drafts**: nothing goes live until a person reviews and
+publishes it, so favour a good first draft over asking many questions up front.
 
 ## What you deliver
 
@@ -33,14 +35,32 @@ this exact envelope:
 }
 ```
 
-Then tell the user: open JasperFlow → **Forms → Import** → choose the file → it lands as a
-draft to review and publish.
+If it needs approvals, also write `<slug>.workflow.jasperflow.json`. The format is in
+`reference/workflows.md` and a matching pair is in `reference/example*.json`.
+
+Then tell the user how to import, **in this order** (a form can only be attached to a
+*published* workflow):
+
+1. **Workflow Builder → Import** → choose the workflow file. If it lists steps to fix
+   (a person or group it couldn't match), fix them, then **Publish**.
+2. **Forms → Import** → choose the form file → open **Settings** → attach the workflow.
+3. Review, run a test, and publish the form.
+
+With no workflow, it's just step 2: the form lands as a draft to review and publish.
 
 **Always run the validator before handing the file over** — it catches the mistakes that
 only surface at import time:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-form.mjs" <file>.jasperflow.json
+```
+
+With a workflow, validate both. Each checks the other's references, such as step ids in
+`filledByStep` and form fields in conditions:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-form.mjs" <slug>.jasperflow.json --workflow <slug>.workflow.jasperflow.json
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-workflow.mjs" <slug>.workflow.jasperflow.json --form <slug>.jasperflow.json
 ```
 
 If that variable is not set (the skill is checked out rather than installed as a
@@ -89,9 +109,13 @@ Forms are a **free-form canvas**, not a flowing document.
    `tableau-prod.manhattan.edu`, `tableau.manhattan.edu`, `mctableau.manhattan.edu`.
    Anything else is rejected at import.
 7. **Don't invent a data source.** For `sql_source`/`lookup` fields, omit
-   `sql.connectionId` — the builder picks the Banner connection in the app. Never guess
+   `sql.connectionId`; the builder picks the Banner connection in the app. Never guess
    at table names; if a field needs Banner data you can't confirm, leave it a plain input
-   and say so in your summary.
+   and say so in your summary. When the user **gives** you the table (and ideally its
+   columns or sample rows), write the query. It may use only `:bannerId` and `:pidm`,
+   both filled in with the person filling in the form; see "Queries" in
+   `reference/fields.md`. List every table it reads, since each must be granted and
+   allow-listed.
 8. **Banner autofill**: set `bannerPrefillPath` on a `lookup` field to one of:
    - `firstName` — first name
    - `lastName` — last name
@@ -107,6 +131,15 @@ Forms are a **free-form canvas**, not a flowing document.
    - `departmentCode` — department org code
    - `supervisorName` — supervisor's full name
 
+9. **Approver fields and who sees what.** When an approver signs, dates or decides
+   something *on the form*, give that field `"filledByStep": "<workflow node id>"`.
+   The submitter sees it read-only; the approver fills it in, and must if it's
+   `required`. Use `hideFrom` (`submitter`, `steps`, and on pages `always`) to keep a
+   field or page from someone, e.g. a decision hidden from the submitter while the
+   signature stays visible. Pages can also be shown/hidden by an answer. Use the same
+   node ids in both files. Details: "Approver fields and audiences" and "Page
+   settings" in `reference/fields.md`.
+
 ## House style
 
 Every form starts with the same header block. Copy it verbatim and only change the
@@ -115,25 +148,27 @@ university, and it is the thing most often left out.
 
 ```json
 { "id": "mu_banner", "type": "image", "label": "", "align": "center",
-  "imageUrl": "/assets/mu-banner.svg", "imageAlt": "Manhattan University",
+  "imageUrl": "/assets/mu-banner-compact.svg", "imageAlt": "Manhattan University",
   "style": {},
-  "position": { "x": 0, "y": 0, "w": 800, "h": 172 } },
+  "position": { "x": 0, "y": 0, "w": 800, "h": 120 } },
 
 { "id": "form_title", "type": "heading", "label": "<the form's title>", "content": "",
   "style": { "bold": true, "fontSize": 26 },
-  "position": { "x": 40, "y": 196, "w": 720, "h": 44 } },
+  "position": { "x": 40, "y": 144, "w": 720, "h": 44 } },
 
 { "id": "form_intro", "type": "rich_text", "label": "", "align": "left",
   "content": "<one or two sentences on what the form is for>",
   "style": { "color": "#4b5563", "fontSize": 14 },
-  "position": { "x": 40, "y": 246, "w": 720, "h": 79 } },
+  "position": { "x": 40, "y": 194, "w": 720, "h": 79 } },
 
 { "id": "header_divider", "type": "divider", "label": "", "style": {},
-  "position": { "x": 40, "y": 317, "w": 720, "h": 16 } }
+  "position": { "x": 40, "y": 265, "w": 720, "h": 16 } }
 ```
 
 Note the banner is **full-bleed**: `x: 0, w: 800`, edge to edge, NOT inset to the
-40px margin like everything else. Your first real field starts at about `y: 350`.
+40px margin like everything else. Your first real field starts at about `y: 298`.
+Use the **compact** banner (`mu-banner-compact.svg`, 120px tall); the older 172px
+`mu-banner.svg` overpowers the form.
 
 The rest:
 
@@ -169,9 +204,10 @@ transliterate:
 | show/hide script | `conditionalLogic` (see rule 4) |
 | table of repeating rows | `repeating_table` + `columns` |
 
-Drop Softdocs routing/approval markup — **approvals are a JasperFlow workflow**, attached
-to the form separately in the app, not part of the definition. Say so in your summary
-rather than trying to encode it.
+Softdocs routing/approval markup becomes a **workflow file**, not part of the form:
+translate each approval stage into an `approval` step (supervisor, advisor, a person
+named on the form, or an approval group) and each routing rule into a `condition`.
+Approver-only sections of the Softdocs form become fields with `filledByStep`.
 
 Reconstruct a sane two-column layout from the source's visual grouping; don't try to
 pixel-match the original.
@@ -180,11 +216,13 @@ pixel-match the original.
 
 1. Read the source (HTML, PDF, screenshot, or a description). Ask only about genuinely
    blocking unknowns — otherwise draft it and flag your assumptions.
-2. Write the JSON file.
-3. **Run the validator** and fix anything it reports.
-4. Hand over the file, then summarise: the fields you created, any conditional logic,
-   and — explicitly — anything you guessed at or left for the builder (data sources,
-   approval routing, Banner mappings).
+2. Write the form file and, if there's routing, the workflow file. Choose the step ids
+   first, since the form refers to them.
+3. **Run the validators** and fix anything they report.
+4. Hand over the files with the import order above, then summarise: the fields you
+   created, any conditional logic, the steps and who each goes to, and, explicitly,
+   anything you guessed at or left for the builder (tables to grant and allow-list,
+   approval groups that must exist, fallback approvers, Banner mappings).
 
 ## What the import file can't carry
 
@@ -196,7 +234,8 @@ in your handover summary so the builder knows what's left:
 | Set up in the app | Why it matters |
 |---|---|
 | **Data source** (Banner connection) | Required before Banner autofill (`lookup` fields) or any SQL-backed options resolve. Without it those fields stay blank. |
-| **Approval workflow** | Routing/approvals are a separate workflow attached to the form. Only a published workflow can be attached. |
+| **Attach the workflow** | Import the workflow file separately (Workflow Builder → Import), publish it, then attach it in the form's Settings. Only a published workflow can be attached. |
+| **Approval groups** | A workflow step assigned to a group needs that group to exist (Admin → Approval Groups). People and groups in a workflow file are matched by email / name. |
 | **Who can access it** | Audience: everyone, students, employees, specific roles, or Banner attributes (college / department / major / minor / student attribute). Defaults to everyone. |
 | **Availability window** | Optional open/close dates. Outside the window the form stops accepting submissions. |
 | **BDM filing** | If the approved PDF should land in AppEnhancer/BDM: the application, index-field mapping, PROD vs TEST, and duplicate handling. |
@@ -215,5 +254,10 @@ Two behaviours worth knowing when you design the form:
 
 - `reference/fields.md` — every field type with its properties, validation rules,
   conditional operators, and styling.
-- `reference/example.jasperflow.json` — a small, correct, two-column form with a
-  conditional "Other" field. Start from it when in doubt.
+- `reference/example.jasperflow.json`: a small, correct, two-column form with a
+  conditional "Other" field and a supervisor section (`filledByStep`). Start from it
+  when in doubt.
+- `reference/workflows.md`: the workflow file: step types, assignment modes,
+  conditions, edges, settings.
+- `reference/example.workflow.jasperflow.json`: the workflow that routes the example
+  form (supervisor, then Finance over $500, declines to a rejected end).
